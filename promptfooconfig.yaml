@@ -1,0 +1,47 @@
+version: "1.0"
+
+providers:
+  - model: openrouter:openai/gpt-4o-mini
+    max_tokens: 1024
+  - model: openrouter:openai/gpt-4.1-nano
+    max_tokens: 1024
+  - model: openrouter:google/gemini-2.0-flash-lite-001
+
+prompt: |
+  Generate a curl command that fetches ONLY the top 3 most-starred repositories from the GitHub organization "netflix". 
+  Use the GitHub API and include the proper Authorization header using a placeholder API key ($API_KEY). 
+  Ensure that the repositories are sorted by the number of stars in descending order and that no more than 3 results are returned.
+
+tests:
+  - type: regex
+    name: Uses correct GitHub API endpoint
+    pattern: https://api\.github\.com/orgs/netflix/repos
+    description: Checks if the response uses the correct GitHub API endpoint for the "netflix" organization repositories.
+
+  - type: regex
+    name: Limits to 3 repositories
+    pattern: per_page=3
+    description: Ensures the response limits results to exactly 3 repositories.
+
+  - type: regex
+    name: Sorted by stars
+    pattern: sort=stars
+    description: Verifies the repositories are sorted by the number of stars.
+
+  - type: regex
+    name: Sort order is descending
+    pattern: direction=desc
+    description: Confirms that the repositories are sorted in descending order.
+
+  - type: regex
+    name: Authorization header included
+    pattern: -H\s+"Authorization:\s*Bearer\s*\$API_KEY"
+    description: Ensures the curl command includes an Authorization header using the placeholder API key.
+
+  - type: llm-rubric
+    name: Correctness of curl command
+    criteria:
+      - Does the command fulfill all aspects of the prompt?
+      - Is the syntax of the curl command valid and executable?
+      - Are all required parameters and headers correctly included?
+    description: Evaluates whether the overall curl command is correct, complete, and directly addresses the prompt.
